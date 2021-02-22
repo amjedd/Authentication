@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -11,6 +9,13 @@ namespace Basic.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly IAuthorizationService _authorizationService;
+
+        public HomeController(IAuthorizationService authorizationService)
+        {
+            _authorizationService = authorizationService;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -28,14 +33,14 @@ namespace Basic.Controllers
             return View("Secret");
         }
 
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         public IActionResult SecretRole()
         {
             return View("Secret");
         }
         public IActionResult Authenticate()
         {
-            var grandmaClaims = new List<Claim>()
+            List<Claim> grandmaClaims = new List<Claim>()
             {
                 new Claim(ClaimTypes.Name,"Bob"),
                 new Claim(ClaimTypes.Email,"Bob@email.com"),
@@ -43,10 +48,23 @@ namespace Basic.Controllers
                 new Claim(ClaimTypes.Role,"Admin"),
                 new Claim("Grandma.say","very nice")
             };
-            var grandmaIdentity = new ClaimsIdentity(grandmaClaims, "Grandma Identity");
-            var usePrincipal = new ClaimsPrincipal(new[] { grandmaIdentity});
+            ClaimsIdentity grandmaIdentity = new ClaimsIdentity(grandmaClaims, "Grandma Identity");
+            ClaimsPrincipal usePrincipal = new ClaimsPrincipal(new[] { grandmaIdentity });
             HttpContext.SignInAsync(usePrincipal);
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> DoStuff()
+        {
+            var builder = new AuthorizationPolicyBuilder("Schema");
+            var custompolicy = builder.RequireClaim("hello").Build();
+            var authresult = await _authorizationService.AuthorizeAsync(User,custompolicy);
+
+            if(authresult.Succeeded)
+            {
+                return View("Index");
+            }
+            return View("Index");
         }
     }
 }

@@ -20,14 +20,9 @@ namespace Basic
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddAuthentication("CookieAuth")
-                .AddCookie("CookieAuth",config=>
-                {
-                    config.Cookie.Name = "Grandmas.Cookie";
-                    config.LoginPath = "/Home/Authenticate";
-                });
 
-            services.AddAuthorization(config=>
+         
+            services.AddAuthorization(config =>
             {
                 //var defaultauthbuilder = new authorizationpolicybuilder();
                 //var defaultauthpolicy = defaultauthbuilder
@@ -39,13 +34,12 @@ namespace Basic
                 //    policyBuilder.RequireClaim(ClaimTypes.DateOfBirth);
                 //});
                 //
-                config.AddPolicy("Admin", policyBuilder => policyBuilder.RequireClaim(ClaimTypes.Role,"Role"));
+                config.AddPolicy("Admin", policyBuilder => policyBuilder.RequireClaim(ClaimTypes.Role, "Role"));
 
                 config.AddPolicy("Claim.DoB", policyBuilder =>
-                 {
-                     policyBuilder.RequireCustomClaim(ClaimTypes.DateOfBirth);
-                 });
-
+                {
+                    policyBuilder.RequireCustomClaim(ClaimTypes.DateOfBirth);
+                });
             });
 
             services.AddScoped<IAuthorizationHandler,CustomRequireClaimHandler>(); 
